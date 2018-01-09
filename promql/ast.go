@@ -242,7 +242,7 @@ type VectorMatching struct {
 // nil, Walk visits each of the children of node with the visitor w, followed
 // by a call of w.Visit(nil).
 type Visitor interface {
-	Visit(node Node) (w Visitor)
+	Visit(node Node, path []Node) (w Visitor)
 }
 
 // Walk traverses an AST in depth-first order: It starts by calling
@@ -250,44 +250,45 @@ type Visitor interface {
 // v.Visit(node) is not nil, Walk is invoked recursively with visitor
 // w for each of the non-nil children of node, followed by a call of
 // w.Visit(nil).
-func Walk(v Visitor, node Node) {
-	if v = v.Visit(node); v == nil {
+func Walk(v Visitor, node Node, path []Node) {
+	if v = v.Visit(node, path); v == nil {
 		return
 	}
+	path = append(path, node)
 
 	switch n := node.(type) {
 	case Statements:
 		for _, s := range n {
-			Walk(v, s)
+			Walk(v, s, path)
 		}
 	case *AlertStmt:
-		Walk(v, n.Expr)
+		Walk(v, n.Expr, path)
 
 	case *EvalStmt:
-		Walk(v, n.Expr)
+		Walk(v, n.Expr, path)
 
 	case *RecordStmt:
-		Walk(v, n.Expr)
+		Walk(v, n.Expr, path)
 
 	case Expressions:
 		for _, e := range n {
-			Walk(v, e)
+			Walk(v, e, path)
 		}
 	case *AggregateExpr:
-		Walk(v, n.Expr)
+		Walk(v, n.Expr, path)
 
 	case *BinaryExpr:
-		Walk(v, n.LHS)
-		Walk(v, n.RHS)
+		Walk(v, n.LHS, path)
+		Walk(v, n.RHS, path)
 
 	case *Call:
-		Walk(v, n.Args)
+		Walk(v, n.Args, path)
 
 	case *ParenExpr:
-		Walk(v, n.Expr)
+		Walk(v, n.Expr, path)
 
 	case *UnaryExpr:
-		Walk(v, n.Expr)
+		Walk(v, n.Expr, path)
 
 	case *MatrixSelector, *NumberLiteral, *StringLiteral, *VectorSelector:
 		// nothing to do
@@ -296,13 +297,13 @@ func Walk(v Visitor, node Node) {
 		panic(fmt.Errorf("promql.Walk: unhandled node type %T", node))
 	}
 
-	v.Visit(nil)
+	v.Visit(nil, nil)
 }
 
-type inspector func(Node) bool
+type inspector func(Node, []Node) bool
 
-func (f inspector) Visit(node Node) Visitor {
-	if f(node) {
+func (f inspector) Visit(node Node, path []Node) Visitor {
+	if f(node, path) {
 		return f
 	}
 	return nil
@@ -311,6 +312,6 @@ func (f inspector) Visit(node Node) Visitor {
 // Inspect traverses an AST in depth-first order: It starts by calling
 // f(node); node must not be nil. If f returns true, Inspect invokes f
 // for all the non-nil children of node, recursively.
-func Inspect(node Node, f func(Node) bool) {
-	Walk(inspector(f), node)
+func Inspect(node Node, f func(Node, []Node) bool) {
+	Walk(inspector(f), node, nil)
 }

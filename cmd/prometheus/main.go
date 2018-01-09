@@ -84,12 +84,12 @@ func main() {
 		localStoragePath string
 		notifier         notifier.Options
 		notifierTimeout  model.Duration
-		queryEngine      promql.EngineOptions
 		web              web.Options
 		tsdb             tsdb.Options
 		lookbackDelta    model.Duration
 		webTimeout       model.Duration
 		queryTimeout     model.Duration
+		queryConcurrency int
 
 		prometheusURL string
 
@@ -97,9 +97,6 @@ func main() {
 	}{
 		notifier: notifier.Options{
 			Registerer: prometheus.DefaultRegisterer,
-		},
-		queryEngine: promql.EngineOptions{
-			Metrics: prometheus.DefaultRegisterer,
 		},
 	}
 
@@ -174,7 +171,7 @@ func main() {
 		Default("2m").SetValue(&cfg.queryTimeout)
 
 	a.Flag("query.max-concurrency", "Maximum number of queries executed concurrently.").
-		Default("20").IntVar(&cfg.queryEngine.MaxConcurrentQueries)
+		Default("20").IntVar(&cfg.queryConcurrency)
 
 	promlogflag.AddFlags(a, &cfg.logLevel)
 
@@ -205,8 +202,6 @@ func main() {
 
 	promql.LookbackDelta = time.Duration(cfg.lookbackDelta)
 
-	cfg.queryEngine.Timeout = time.Duration(cfg.queryTimeout)
-
 	logger := promlog.New(cfg.logLevel)
 
 	// XXX(fabxc): Kubernetes does background logging which we can only customize by modifying
@@ -229,7 +224,6 @@ func main() {
 		fanoutStorage = storage.NewFanout(logger, localStorage, remoteStorage)
 	)
 
-	cfg.queryEngine.Logger = log.With(logger, "component", "query engine")
 	var (
 		ctxWeb, cancelWeb = context.WithCancel(context.Background())
 		ctxRule           = context.Background()
@@ -237,10 +231,15 @@ func main() {
 		notifier         = notifier.New(&cfg.notifier, log.With(logger, "component", "notifier"))
 		discoveryManager = discovery.NewManager(log.With(logger, "component", "discovery manager"))
 		scrapeManager    = retrieval.NewScrapeManager(log.With(logger, "component", "scrape manager"), fanoutStorage)
-		queryEngine      = promql.NewEngine(fanoutStorage, &cfg.queryEngine)
-		ruleManager      = rules.NewManager(&rules.ManagerOptions{
+		queryEngine      = promql.NewEngine(
+			log.With(logger, "component", "query engine"),
+			prometheus.DefaultRegisterer,
+			cfg.queryConcurrency,
+			time.Duration(cfg.queryTimeout),
+		)
+		ruleManager = rules.NewManager(&rules.ManagerOptions{
 			Appendable:  fanoutStorage,
-			QueryFunc:   rules.EngineQueryFunc(queryEngine),
+			QueryFunc:   rules.EngineQueryFunc(queryEngine, fanoutStorage),
 			NotifyFunc:  sendAlerts(notifier, cfg.web.ExternalURL.String()),
 			Context:     ctxRule,
 			ExternalURL: cfg.web.ExternalURL,
