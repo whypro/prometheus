@@ -800,7 +800,7 @@ func (p *parser) call(name string) *Call {
 //
 func (p *parser) labelSet() labels.Labels {
 	set := []labels.Label{}
-	for _, lm := range p.labelMatchers(itemEQL) {
+	for _, lm := range p.labelMatchers(ItemEQL) {
 		set = append(set, labels.Label{Name: lm.Name, Value: lm.Value})
 	}
 	return labels.New(set...)
@@ -845,9 +845,9 @@ func (p *parser) labelMatchers(operators ...ItemType) []*labels.Matcher {
 		// Map the item to the respective match type.
 		var matchType labels.MatchType
 		switch op {
-		case itemEQL:
+		case ItemEQL:
 			matchType = labels.MatchEqual
-		case itemNEQ:
+		case ItemNEQ:
 			matchType = labels.MatchNotEqual
 		case itemEQLRegex:
 			matchType = labels.MatchRegexp
@@ -939,7 +939,7 @@ func (p *parser) VectorSelector(name string) *VectorSelector {
 	var matchers []*labels.Matcher
 	// Parse label matching if any.
 	if t := p.peek(); t.typ == itemLeftBrace {
-		matchers = p.labelMatchers(itemEQL, itemNEQ, itemEQLRegex, itemNEQRegex)
+		matchers = p.labelMatchers(ItemEQL, ItemNEQ, itemEQLRegex, itemNEQRegex)
 	}
 	// Metric name must not be set in the label matchers and before at the same time.
 	if name != "" {

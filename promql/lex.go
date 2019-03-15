@@ -70,7 +70,7 @@ func (i ItemType) isKeyword() bool { return i > keywordsStart && i < keywordsEnd
 // Returns false otherwise.
 func (i ItemType) isComparisonOperator() bool {
 	switch i {
-	case itemEQL, itemNEQ, itemLTE, itemLSS, itemGTE, itemGTR:
+	case ItemEQL, ItemNEQ, ItemLTE, ItemLSS, ItemGTE, ItemGTR:
 		return true
 	default:
 		return false
@@ -80,7 +80,7 @@ func (i ItemType) isComparisonOperator() bool {
 // isSetOperator returns whether the item corresponds to a set operator.
 func (i ItemType) isSetOperator() bool {
 	switch i {
-	case itemLAND, itemLOR, itemLUnless:
+	case ItemLAND, ItemLOR, ItemLUnless:
 		return true
 	}
 	return false
@@ -94,11 +94,11 @@ const LowestPrec = 0 // Non-operators.
 // is LowestPrec.
 func (i ItemType) precedence() int {
 	switch i {
-	case itemLOR:
+	case ItemLOR:
 		return 1
-	case itemLAND, itemLUnless:
+	case ItemLAND, ItemLUnless:
 		return 2
-	case itemEQL, itemNEQ, itemLTE, itemLSS, itemGTE, itemGTR:
+	case ItemEQL, ItemNEQ, ItemLTE, ItemLSS, ItemGTE, ItemGTR:
 		return 3
 	case itemADD, itemSUB:
 		return 4
@@ -151,15 +151,15 @@ const (
 	itemMUL
 	itemMOD
 	itemDIV
-	itemLAND
-	itemLOR
-	itemLUnless
-	itemEQL
-	itemNEQ
-	itemLTE
-	itemLSS
-	itemGTE
-	itemGTR
+	ItemLAND
+	ItemLOR
+	ItemLUnless
+	ItemEQL
+	ItemNEQ
+	ItemLTE
+	ItemLSS
+	ItemGTE
+	ItemGTR
 	itemEQLRegex
 	itemNEQRegex
 	itemPOW
@@ -200,9 +200,9 @@ const (
 
 var key = map[string]ItemType{
 	// Operators.
-	"and":    itemLAND,
-	"or":     itemLOR,
-	"unless": itemLUnless,
+	"and":    ItemLAND,
+	"or":     ItemLOR,
+	"unless": ItemLUnless,
 
 	// Aggregators.
 	"sum":          itemSum,
@@ -253,12 +253,12 @@ var itemTypeStr = map[ItemType]string{
 	itemMUL:      "*",
 	itemMOD:      "%",
 	itemDIV:      "/",
-	itemEQL:      "==",
-	itemNEQ:      "!=",
-	itemLTE:      "<=",
-	itemLSS:      "<",
-	itemGTE:      ">=",
-	itemGTR:      ">",
+	ItemEQL:      "==",
+	ItemNEQ:      "!=",
+	ItemLTE:      "<=",
+	ItemLSS:      "<",
+	ItemGTE:      ">=",
+	ItemGTR:      ">",
 	itemEQLRegex: "=~",
 	itemNEQRegex: "!~",
 	itemPOW:      "^",
@@ -482,7 +482,7 @@ func lexStatements(l *lexer) stateFn {
 	case r == '=':
 		if t := l.peek(); t == '=' {
 			l.next()
-			l.emit(itemEQL)
+			l.emit(ItemEQL)
 		} else if t == '~' {
 			return l.errorf("unexpected character after '=': %q", t)
 		} else {
@@ -490,23 +490,23 @@ func lexStatements(l *lexer) stateFn {
 		}
 	case r == '!':
 		if t := l.next(); t == '=' {
-			l.emit(itemNEQ)
+			l.emit(ItemNEQ)
 		} else {
 			return l.errorf("unexpected character after '!': %q", t)
 		}
 	case r == '<':
 		if t := l.peek(); t == '=' {
 			l.next()
-			l.emit(itemLTE)
+			l.emit(ItemLTE)
 		} else {
-			l.emit(itemLSS)
+			l.emit(ItemLSS)
 		}
 	case r == '>':
 		if t := l.peek(); t == '=' {
 			l.next()
-			l.emit(itemGTE)
+			l.emit(ItemGTE)
 		} else {
-			l.emit(itemGTR)
+			l.emit(ItemGTR)
 		}
 	case isDigit(r) || (r == '.' && isDigit(l.peek())):
 		l.backup()
@@ -584,13 +584,13 @@ func lexInsideBraces(l *lexer) stateFn {
 			break
 		}
 		l.backup()
-		l.emit(itemEQL)
+		l.emit(ItemEQL)
 	case r == '!':
 		switch nr := l.next(); {
 		case nr == '~':
 			l.emit(itemNEQRegex)
 		case nr == '=':
-			l.emit(itemNEQ)
+			l.emit(ItemNEQ)
 		default:
 			return l.errorf("unexpected character after '!' inside braces: %q", nr)
 		}

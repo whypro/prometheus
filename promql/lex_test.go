@@ -177,25 +177,25 @@ var tests = []struct {
 	}, {
 		// Inside braces equality is a single '=' character.
 		input:    `{=}`,
-		expected: []item{{itemLeftBrace, 0, `{`}, {itemEQL, 1, `=`}, {itemRightBrace, 2, `}`}},
+		expected: []item{{itemLeftBrace, 0, `{`}, {ItemEQL, 1, `=`}, {itemRightBrace, 2, `}`}},
 	}, {
 		input:    `==`,
-		expected: []item{{itemEQL, 0, `==`}},
+		expected: []item{{ItemEQL, 0, `==`}},
 	}, {
 		input:    `!=`,
-		expected: []item{{itemNEQ, 0, `!=`}},
+		expected: []item{{ItemNEQ, 0, `!=`}},
 	}, {
 		input:    `<`,
-		expected: []item{{itemLSS, 0, `<`}},
+		expected: []item{{ItemLSS, 0, `<`}},
 	}, {
 		input:    `>`,
-		expected: []item{{itemGTR, 0, `>`}},
+		expected: []item{{ItemGTR, 0, `>`}},
 	}, {
 		input:    `>=`,
-		expected: []item{{itemGTE, 0, `>=`}},
+		expected: []item{{ItemGTE, 0, `>=`}},
 	}, {
 		input:    `<=`,
-		expected: []item{{itemLTE, 0, `<=`}},
+		expected: []item{{ItemLTE, 0, `<=`}},
 	}, {
 		input:    `+`,
 		expected: []item{{itemADD, 0, `+`}},
@@ -216,13 +216,13 @@ var tests = []struct {
 		expected: []item{{itemMOD, 0, `%`}},
 	}, {
 		input:    `AND`,
-		expected: []item{{itemLAND, 0, `AND`}},
+		expected: []item{{ItemLAND, 0, `AND`}},
 	}, {
 		input:    `or`,
-		expected: []item{{itemLOR, 0, `or`}},
+		expected: []item{{ItemLOR, 0, `or`}},
 	}, {
 		input:    `unless`,
-		expected: []item{{itemLUnless, 0, `unless`}},
+		expected: []item{{ItemLUnless, 0, `unless`}},
 	},
 	// Test aggregators.
 	{
@@ -303,7 +303,7 @@ var tests = []struct {
 		expected: []item{
 			{itemLeftBrace, 0, `{`},
 			{itemIdentifier, 1, `foo`},
-			{itemEQL, 4, `=`},
+			{ItemEQL, 4, `=`},
 			{itemString, 5, `'bar'`},
 			{itemRightBrace, 10, `}`},
 		},
@@ -312,7 +312,7 @@ var tests = []struct {
 		expected: []item{
 			{itemLeftBrace, 0, `{`},
 			{itemIdentifier, 1, `foo`},
-			{itemEQL, 4, `=`},
+			{ItemEQL, 4, `=`},
 			{itemString, 5, `"bar"`},
 			{itemRightBrace, 10, `}`},
 		},
@@ -321,7 +321,7 @@ var tests = []struct {
 		expected: []item{
 			{itemLeftBrace, 0, `{`},
 			{itemIdentifier, 1, `foo`},
-			{itemEQL, 4, `=`},
+			{ItemEQL, 4, `=`},
 			{itemString, 5, `"bar\"bar"`},
 			{itemRightBrace, 15, `}`},
 		},
@@ -330,7 +330,7 @@ var tests = []struct {
 		expected: []item{
 			{itemLeftBrace, 0, `{`},
 			{itemIdentifier, 1, `NaN`},
-			{itemNEQ, 5, `!=`},
+			{ItemNEQ, 5, `!=`},
 			{itemString, 8, `"bar"`},
 			{itemRightBrace, 14, `}`},
 		},

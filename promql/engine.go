@@ -909,15 +909,15 @@ func (ev *evaluator) eval(expr Expr) Value {
 			}, e.LHS, e.RHS)
 		case lt == ValueTypeVector && rt == ValueTypeVector:
 			switch e.Op {
-			case itemLAND:
+			case ItemLAND:
 				return ev.rangeEval(func(v []Value, enh *EvalNodeHelper) Vector {
 					return ev.VectorAnd(v[0].(Vector), v[1].(Vector), e.VectorMatching, enh)
 				}, e.LHS, e.RHS)
-			case itemLOR:
+			case ItemLOR:
 				return ev.rangeEval(func(v []Value, enh *EvalNodeHelper) Vector {
 					return ev.VectorOr(v[0].(Vector), v[1].(Vector), e.VectorMatching, enh)
 				}, e.LHS, e.RHS)
-			case itemLUnless:
+			case ItemLUnless:
 				return ev.rangeEval(func(v []Value, enh *EvalNodeHelper) Vector {
 					return ev.VectorUnless(v[0].(Vector), v[1].(Vector), e.VectorMatching, enh)
 				}, e.LHS, e.RHS)
@@ -1401,17 +1401,17 @@ func scalarBinop(op ItemType, lhs, rhs float64) float64 {
 		return math.Pow(lhs, rhs)
 	case itemMOD:
 		return math.Mod(lhs, rhs)
-	case itemEQL:
+	case ItemEQL:
 		return btos(lhs == rhs)
-	case itemNEQ:
+	case ItemNEQ:
 		return btos(lhs != rhs)
-	case itemGTR:
+	case ItemGTR:
 		return btos(lhs > rhs)
-	case itemLSS:
+	case ItemLSS:
 		return btos(lhs < rhs)
-	case itemGTE:
+	case ItemGTE:
 		return btos(lhs >= rhs)
-	case itemLTE:
+	case ItemLTE:
 		return btos(lhs <= rhs)
 	}
 	panic(fmt.Errorf("operator %q not allowed for Scalar operations", op))
@@ -1432,17 +1432,17 @@ func vectorElemBinop(op ItemType, lhs, rhs float64) (float64, bool) {
 		return math.Pow(lhs, rhs), true
 	case itemMOD:
 		return math.Mod(lhs, rhs), true
-	case itemEQL:
+	case ItemEQL:
 		return lhs, lhs == rhs
-	case itemNEQ:
+	case ItemNEQ:
 		return lhs, lhs != rhs
-	case itemGTR:
+	case ItemGTR:
 		return lhs, lhs > rhs
-	case itemLSS:
+	case ItemLSS:
 		return lhs, lhs < rhs
-	case itemGTE:
+	case ItemGTE:
 		return lhs, lhs >= rhs
-	case itemLTE:
+	case ItemLTE:
 		return lhs, lhs <= rhs
 	}
 	panic(fmt.Errorf("operator %q not allowed for operations between Vectors", op))
