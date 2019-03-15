@@ -1689,7 +1689,7 @@ func mustLabelMatcher(mt labels.MatchType, name, val string) *labels.Matcher {
 }
 
 func mustGetFunction(name string) *Function {
-	f, ok := getFunction(name)
+	f, ok := GetFunction(name)
 	if !ok {
 		panic(fmt.Errorf("function %q does not exist", name))
 	}
